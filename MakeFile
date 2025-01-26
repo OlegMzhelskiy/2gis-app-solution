@@ -1,0 +1,39 @@
+IMAGE_NAME=2gis-app
+CONTAINER_NAME=2gis-app-conteiner
+PORT=8080
+
+.PHONY: build
+build:
+	docker build -t $(IMAGE_NAME):latest .
+
+.PHONY: run
+run:
+	docker run -d --name $(CONTAINER_NAME) -p $(PORT):8080 $(IMAGE_NAME)
+
+.PHONY: build-run
+build-run: build
+	docker run -d --name $(CONTAINER_NAME) -p $(PORT):8080 $(IMAGE_NAME)
+
+.PHONY: build-rerun
+build-rerun: build remove
+	docker run -d --name $(CONTAINER_NAME) -p $(PORT):8080 $(IMAGE_NAME)
+
+.PHONY: remove-run
+remove-run: remove
+	docker run -d --name $(CONTAINER_NAME) -p $(PORT):8080 $(IMAGE_NAME)
+
+.PHONY: stop
+stop:
+	docker stop $(CONTAINER_NAME)
+
+.PHONY: remove
+remove:
+	docker rm $(CONTAINER_NAME)
+
+.PHONY: lint
+lint:
+	golangci-lint run ./...
+
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run --fix
