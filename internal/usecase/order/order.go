@@ -1,11 +1,15 @@
 package order
 
-import "applicationDesignTest/internal/domain"
+import (
+	"context"
+
+	"applicationDesignTest/internal/domain"
+)
 
 type orderRepository interface {
-	GetOrderByID(id domain.OrderID) (*domain.Order, error)
-	GetOrderByNumber(orderNumber domain.OrderNumber) (*domain.Order, error)
-	AddOrder(order domain.Order) (*domain.Order, error)
+	GetOrderByID(ctx context.Context, id domain.OrderID) (*domain.Order, error)
+	GetOrderByNumber(ctx context.Context, orderNumber domain.OrderNumber) (*domain.Order, error)
+	AddOrder(ctx context.Context, order domain.Order) (*domain.Order, error)
 }
 
 type OrderService struct {
@@ -18,14 +22,14 @@ func NewOrderService(orderStore orderRepository) *OrderService {
 	}
 }
 
-func (s *OrderService) GetOrderByID(id domain.OrderID) (*domain.Order, error) {
-	return s.orderStore.GetOrderByID(id)
+func (s *OrderService) GetOrderByID(ctx context.Context, id domain.OrderID) (*domain.Order, error) {
+	return s.orderStore.GetOrderByID(ctx, id)
 }
 
-func (s *OrderService) GetOrderByNumber(orderNumber domain.OrderNumber) (*domain.Order, error) {
-	return s.orderStore.GetOrderByNumber(orderNumber)
+func (s *OrderService) GetOrderByNumber(ctx context.Context, orderNumber domain.OrderNumber) (*domain.Order, error) {
+	return s.orderStore.GetOrderByNumber(ctx, orderNumber)
 }
 
-func (s *OrderService) AddOrder(order domain.Order) (*domain.Order, error) {
-	return s.orderStore.AddOrder(order)
+func (s *OrderService) AddOrder(ctx context.Context, order domain.Order) (*domain.Order, error) {
+	return s.orderStore.AddOrder(ctx, order)
 }

@@ -1,6 +1,7 @@
 package booking
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -39,9 +40,9 @@ func TestBookingService_CreateOrder(t *testing.T) {
 			name:  "successfully create",
 			order: testOrder,
 			mockSetup: func() {
-				mockOrderService.EXPECT().GetOrderByID(testOrder.ID).Return(nil, domain.ErrOrderNotFound)
-				mockHotelRepo.EXPECT().Reserve(testOrder.Bookings).Return(nil)
-				mockOrderService.EXPECT().AddOrder(testOrder).Return(&testOrder, nil)
+				mockOrderService.EXPECT().GetOrderByID(gomock.Any(), testOrder.ID).Return(nil, domain.ErrOrderNotFound)
+				mockHotelRepo.EXPECT().Reserve(gomock.Any(), testOrder.Bookings).Return(nil)
+				mockOrderService.EXPECT().AddOrder(gomock.Any(), testOrder).Return(&testOrder, nil)
 			},
 			expectedResult: &testOrder,
 			expectedError:  nil,
@@ -50,7 +51,7 @@ func TestBookingService_CreateOrder(t *testing.T) {
 			name:  "order already exists",
 			order: testOrder,
 			mockSetup: func() {
-				mockOrderService.EXPECT().GetOrderByID(testOrder.ID).Return(&testOrder, nil)
+				mockOrderService.EXPECT().GetOrderByID(gomock.Any(), testOrder.ID).Return(&testOrder, nil)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrOrderAlreadyExists,
@@ -59,17 +60,17 @@ func TestBookingService_CreateOrder(t *testing.T) {
 			name:  "getting order error",
 			order: testOrder,
 			mockSetup: func() {
-				mockOrderService.EXPECT().GetOrderByID(testOrder.ID).Return(nil, errors.New("getting order failed"))
+				mockOrderService.EXPECT().GetOrderByID(gomock.Any(), testOrder.ID).Return(nil, errors.New("getting order failed"))
 			},
 			expectedResult: nil,
-			expectedError:  errors.New("get order error"),
+			expectedError:  errors.New("failed to get order by id: getting order failed"),
 		},
 		{
 			name:  "reserve error",
 			order: testOrder,
 			mockSetup: func() {
-				mockOrderService.EXPECT().GetOrderByID(testOrder.ID).Return(nil, domain.ErrOrderNotFound)
-				mockHotelRepo.EXPECT().Reserve(testOrder.Bookings).Return(errors.New("reservation failed"))
+				mockOrderService.EXPECT().GetOrderByID(gomock.Any(), testOrder.ID).Return(nil, domain.ErrOrderNotFound)
+				mockHotelRepo.EXPECT().Reserve(gomock.Any(), testOrder.Bookings).Return(errors.New("reservation failed"))
 			},
 			expectedResult: nil,
 			expectedError:  errors.New("reservation failed"),
@@ -78,9 +79,9 @@ func TestBookingService_CreateOrder(t *testing.T) {
 			name:  "addition order error",
 			order: testOrder,
 			mockSetup: func() {
-				mockOrderService.EXPECT().GetOrderByID(testOrder.ID).Return(nil, domain.ErrOrderNotFound)
-				mockHotelRepo.EXPECT().Reserve(testOrder.Bookings).Return(nil)
-				mockOrderService.EXPECT().AddOrder(testOrder).Return(nil, errors.New("addition order failed"))
+				mockOrderService.EXPECT().GetOrderByID(gomock.Any(), testOrder.ID).Return(nil, domain.ErrOrderNotFound)
+				mockHotelRepo.EXPECT().Reserve(gomock.Any(), testOrder.Bookings).Return(nil)
+				mockOrderService.EXPECT().AddOrder(gomock.Any(), testOrder).Return(nil, errors.New("addition order failed"))
 			},
 			expectedResult: nil,
 			expectedError:  errors.New("addition order failed"),
@@ -91,7 +92,7 @@ func TestBookingService_CreateOrder(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockSetup()
 
-			result, err := bs.CreateOrder(tt.order)
+			result, err := bs.CreateOrder(context.Background(), tt.order)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

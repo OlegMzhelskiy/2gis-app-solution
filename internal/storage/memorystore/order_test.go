@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -72,7 +73,7 @@ func TestOrderStore_AddOrder(t *testing.T) {
 			)
 
 			for _, order := range tt.orders {
-				result, err = store.AddOrder(order)
+				result, err = store.AddOrder(context.Background(), order)
 			}
 
 			if tt.expectedError != nil {
@@ -83,13 +84,15 @@ func TestOrderStore_AddOrder(t *testing.T) {
 
 			assert.Equal(t, tt.expectedOrder.Number, result.Number)
 
-			store.idMu.RLock()
+			store.idMu.Lock()
+			tt.expectedOrder.CreatedAt = store.ordersByID[tt.expectedOrder.ID].CreatedAt
 			assert.Equal(t, tt.expectedOrder, *store.ordersByID[tt.expectedOrder.ID])
-			store.idMu.RUnlock()
+			store.idMu.Unlock()
 
-			store.numMu.RLock()
+			store.numMu.Lock()
+			tt.expectedOrder.CreatedAt = store.ordersByNumber[tt.expectedOrder.Number].CreatedAt
 			assert.Equal(t, tt.expectedOrder, *store.ordersByNumber[tt.expectedOrder.Number])
-			store.numMu.RUnlock()
+			store.numMu.Unlock()
 
 			assert.Equal(t, int(store.maxOrderNumber.Load()), len(tt.orders))
 		})

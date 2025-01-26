@@ -1,6 +1,7 @@
 package get_order
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -8,11 +9,12 @@ import (
 	"applicationDesignTest/internal/api/http_helpers"
 	"applicationDesignTest/internal/domain"
 	"applicationDesignTest/pkg/log"
+
 	"github.com/go-chi/chi/v5"
 )
 
 type OrderService interface {
-	GetOrderByNumber(orderNumber domain.OrderNumber) (*domain.Order, error)
+	GetOrderByNumber(ctx context.Context, orderNumber domain.OrderNumber) (*domain.Order, error)
 }
 
 type Handler struct {
@@ -26,6 +28,8 @@ func NewHandler(orderService OrderService) *Handler {
 }
 
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	orderNumberStr := chi.URLParam(r, "orderNumber")
 
 	orderNumber, err := strconv.Atoi(orderNumberStr)
@@ -33,7 +37,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		http_helpers.SendError(w, http.StatusBadRequest, "invalid order number", http_helpers.ErrorTypeValidationError)
 	}
 
-	order, err := h.orderService.GetOrderByNumber(domain.OrderNumber(orderNumber))
+	order, err := h.orderService.GetOrderByNumber(ctx, domain.OrderNumber(orderNumber))
 	if err != nil {
 		if errors.Is(err, domain.ErrOrderNotFound) {
 			http_helpers.SendError(w, http.StatusBadRequest, "such order doesn't exist", http_helpers.ErrorTypeValidationError)

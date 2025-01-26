@@ -1,6 +1,7 @@
 package add_availability
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -20,7 +21,7 @@ type request struct {
 }
 
 type BookingService interface {
-	AddRoomAvailability(hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error
+	AddRoomAvailability(ctx context.Context, hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error
 }
 
 type Handler struct {
@@ -34,6 +35,8 @@ func NewHandler(bs BookingService) *Handler {
 }
 
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req request
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -41,7 +44,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.booking.AddRoomAvailability(req.HotelID, req.RoomType, req.Date.Time, req.RoomCount); err != nil {
+	if err := h.booking.AddRoomAvailability(ctx, req.HotelID, req.RoomType, req.Date.Time, req.RoomCount); err != nil {
 		if errors.Is(err, domain.ErrHotelNotFound) {
 			http_helpers.SendError(w, http.StatusBadRequest, "invalid hotel id", http_helpers.ErrorTypeValidationError)
 			return

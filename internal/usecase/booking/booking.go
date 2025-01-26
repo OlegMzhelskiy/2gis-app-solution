@@ -3,6 +3,7 @@ package booking
 //go:generate mockgen -source=booking.go -destination=mocks/mock.go -package=mocks
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -11,13 +12,13 @@ import (
 )
 
 type hotelRepository interface {
-	Reserve(bookings []domain.Booking) error
-	AddRoomAvailability(hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error
+	Reserve(ctx context.Context, bookings []domain.Booking) error
+	AddRoomAvailability(ctx context.Context, hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error
 }
 
 type orderService interface {
-	AddOrder(order domain.Order) (*domain.Order, error)
-	GetOrderByID(id domain.OrderID) (*domain.Order, error)
+	AddOrder(ctx context.Context, order domain.Order) (*domain.Order, error)
+	GetOrderByID(ctx context.Context, id domain.OrderID) (*domain.Order, error)
 }
 
 type BookingService struct {
@@ -32,8 +33,8 @@ func NewBookingService(hotelStore hotelRepository, orderService orderService) *B
 	}
 }
 
-func (bs *BookingService) CreateOrder(order domain.Order) (*domain.Order, error) {
-	existOrder, err := bs.orderService.GetOrderByID(order.ID)
+func (bs *BookingService) CreateOrder(ctx context.Context, order domain.Order) (*domain.Order, error) {
+	existOrder, err := bs.orderService.GetOrderByID(ctx, order.ID)
 	if err != nil {
 		if !errors.Is(err, domain.ErrOrderNotFound) {
 			return nil, fmt.Errorf("failed to get order by id: %w", err)
@@ -45,13 +46,13 @@ func (bs *BookingService) CreateOrder(order domain.Order) (*domain.Order, error)
 		return existOrder, domain.ErrOrderAlreadyExists
 	}
 
-	if err := bs.hotelStore.Reserve(order.Bookings); err != nil {
+	if err := bs.hotelStore.Reserve(ctx, order.Bookings); err != nil {
 		return nil, err
 	}
 
-	return bs.orderService.AddOrder(order)
+	return bs.orderService.AddOrder(ctx, order)
 }
 
-func (bs *BookingService) AddRoomAvailability(hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
-	return bs.hotelStore.AddRoomAvailability(hotelID, roomType, date, rooms)
+func (bs *BookingService) AddRoomAvailability(ctx context.Context, hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
+	return bs.hotelStore.AddRoomAvailability(ctx, hotelID, roomType, date, rooms)
 }

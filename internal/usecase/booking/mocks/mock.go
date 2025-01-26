@@ -6,6 +6,7 @@ package mocks
 
 import (
 	domain "applicationDesignTest/internal/domain"
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -36,31 +37,31 @@ func (m *MockhotelRepository) EXPECT() *MockhotelRepositoryMockRecorder {
 }
 
 // AddRoomAvailability mocks base method.
-func (m *MockhotelRepository) AddRoomAvailability(hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
+func (m *MockhotelRepository) AddRoomAvailability(ctx context.Context, hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddRoomAvailability", hotelID, roomType, date, rooms)
+	ret := m.ctrl.Call(m, "AddRoomAvailability", ctx, hotelID, roomType, date, rooms)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddRoomAvailability indicates an expected call of AddRoomAvailability.
-func (mr *MockhotelRepositoryMockRecorder) AddRoomAvailability(hotelID, roomType, date, rooms interface{}) *gomock.Call {
+func (mr *MockhotelRepositoryMockRecorder) AddRoomAvailability(ctx, hotelID, roomType, date, rooms interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRoomAvailability", reflect.TypeOf((*MockhotelRepository)(nil).AddRoomAvailability), hotelID, roomType, date, rooms)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRoomAvailability", reflect.TypeOf((*MockhotelRepository)(nil).AddRoomAvailability), ctx, hotelID, roomType, date, rooms)
 }
 
 // Reserve mocks base method.
-func (m *MockhotelRepository) Reserve(bookings []domain.Booking) error {
+func (m *MockhotelRepository) Reserve(ctx context.Context, bookings []domain.Booking) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Reserve", bookings)
+	ret := m.ctrl.Call(m, "Reserve", ctx, bookings)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Reserve indicates an expected call of Reserve.
-func (mr *MockhotelRepositoryMockRecorder) Reserve(bookings interface{}) *gomock.Call {
+func (mr *MockhotelRepositoryMockRecorder) Reserve(ctx, bookings interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reserve", reflect.TypeOf((*MockhotelRepository)(nil).Reserve), bookings)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reserve", reflect.TypeOf((*MockhotelRepository)(nil).Reserve), ctx, bookings)
 }
 
 // MockorderService is a mock of orderService interface.
@@ -87,31 +88,31 @@ func (m *MockorderService) EXPECT() *MockorderServiceMockRecorder {
 }
 
 // AddOrder mocks base method.
-func (m *MockorderService) AddOrder(order domain.Order) (*domain.Order, error) {
+func (m *MockorderService) AddOrder(ctx context.Context, order domain.Order) (*domain.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddOrder", order)
+	ret := m.ctrl.Call(m, "AddOrder", ctx, order)
 	ret0, _ := ret[0].(*domain.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddOrder indicates an expected call of AddOrder.
-func (mr *MockorderServiceMockRecorder) AddOrder(order interface{}) *gomock.Call {
+func (mr *MockorderServiceMockRecorder) AddOrder(ctx, order interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrder", reflect.TypeOf((*MockorderService)(nil).AddOrder), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrder", reflect.TypeOf((*MockorderService)(nil).AddOrder), ctx, order)
 }
 
 // GetOrderByID mocks base method.
-func (m *MockorderService) GetOrderByID(id domain.OrderID) (*domain.Order, error) {
+func (m *MockorderService) GetOrderByID(ctx context.Context, id domain.OrderID) (*domain.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOrderByID", id)
+	ret := m.ctrl.Call(m, "GetOrderByID", ctx, id)
 	ret0, _ := ret[0].(*domain.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetOrderByID indicates an expected call of GetOrderByID.
-func (mr *MockorderServiceMockRecorder) GetOrderByID(id interface{}) *gomock.Call {
+func (mr *MockorderServiceMockRecorder) GetOrderByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderByID", reflect.TypeOf((*MockorderService)(nil).GetOrderByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderByID", reflect.TypeOf((*MockorderService)(nil).GetOrderByID), ctx, id)
 }

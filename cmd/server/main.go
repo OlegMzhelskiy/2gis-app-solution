@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"applicationDesignTest/internal/api/add_availability"
 	"applicationDesignTest/internal/api/create_order"
@@ -23,7 +28,11 @@ func main() {
 	log.InitializeLogger()
 
 	l := log.GetLogger()
-	defer l.Sync() //nolint:errcheck
+	defer func() {
+		if err := l.Sync(); err != nil {
+			log.Error("failed to sync logger", err)
+		}
+	}()
 
 	if err := run(); err != nil {
 		log.Error("server stopped", err)
@@ -67,9 +76,32 @@ func run() error {
 
 	log.Info(fmt.Sprintf("server is running on port %v", cfg.Port))
 
-	if err = http.ListenAndServe(":"+cfg.Port, r); err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+	srv := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: r,
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("server failed", err)
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+
+	<-stop
+	log.Info("received shutdown signal, shutting down gracefully...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("server shutdown failed", err)
+		return fmt.Errorf("server shutdown failed: %w", err)
+	}
+
+	log.Info("server gracefully stopped")
 
 	return nil
 }

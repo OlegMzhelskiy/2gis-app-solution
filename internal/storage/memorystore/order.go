@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -25,7 +26,7 @@ func NewOrderStore() *OrderStore {
 	}
 }
 
-func (s *OrderStore) AddOrder(order domain.Order) (*domain.Order, error) {
+func (s *OrderStore) AddOrder(ctx context.Context, order domain.Order) (*domain.Order, error) {
 	order.Number = domain.OrderNumber(s.maxOrderNumber.Add(1))
 	order.CreatedAt = time.Now()
 
@@ -41,7 +42,7 @@ func (s *OrderStore) AddOrder(order domain.Order) (*domain.Order, error) {
 	return &order, nil
 }
 
-func (s *OrderStore) GetOrderByID(id domain.OrderID) (*domain.Order, error) {
+func (s *OrderStore) GetOrderByID(ctx context.Context, id domain.OrderID) (*domain.Order, error) {
 	s.idMu.RLock()
 	defer s.idMu.RUnlock()
 
@@ -53,7 +54,7 @@ func (s *OrderStore) GetOrderByID(id domain.OrderID) (*domain.Order, error) {
 	return order, nil
 }
 
-func (s *OrderStore) GetOrderByNumber(orderNumber domain.OrderNumber) (*domain.Order, error) {
+func (s *OrderStore) GetOrderByNumber(ctx context.Context, orderNumber domain.OrderNumber) (*domain.Order, error) {
 	s.numMu.RLock()
 	defer s.numMu.RUnlock()
 

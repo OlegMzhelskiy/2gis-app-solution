@@ -3,6 +3,7 @@ package memorystore
 //go:generate mockgen -source=hotel.go -destination=mocks/mock.go -package=mocks
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -40,7 +41,7 @@ func NewHotelStore() *HotelStore {
 	}
 }
 
-func (s *HotelStore) GetHotel(hotelID domain.HotelID) (*domain.Hotel, error) {
+func (s *HotelStore) GetHotel(ctx context.Context, hotelID domain.HotelID) (*domain.Hotel, error) {
 	s.mu.RLock()
 	hotelWrapper, ok := s.roomAvailability[hotelID]
 	s.mu.RUnlock()
@@ -52,7 +53,7 @@ func (s *HotelStore) GetHotel(hotelID domain.HotelID) (*domain.Hotel, error) {
 	return hotelWrapper.Hotel, nil
 }
 
-func (s *HotelStore) AddHotel(hotel domain.Hotel) error {
+func (s *HotelStore) AddHotel(ctx context.Context, hotel domain.Hotel) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -66,7 +67,7 @@ func (s *HotelStore) AddHotel(hotel domain.Hotel) error {
 	return nil
 }
 
-func (s *HotelStore) AddRoomAvailability(hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
+func (s *HotelStore) AddRoomAvailability(ctx context.Context, hotelID domain.HotelID, roomType domain.RoomType, date time.Time, rooms int) error {
 	s.mu.RLock()
 	hotelWrapper, ok := s.roomAvailability[hotelID]
 	s.mu.RUnlock()
@@ -93,7 +94,7 @@ func (s *HotelStore) AddRoomAvailability(hotelID domain.HotelID, roomType domain
 	return nil
 }
 
-func (s *HotelStore) Reserve(bookings []domain.Booking) error {
+func (s *HotelStore) Reserve(ctx context.Context, bookings []domain.Booking) error {
 	var lockedCategories []reservedCategories
 
 	defer func() {

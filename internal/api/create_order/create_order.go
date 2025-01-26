@@ -1,6 +1,7 @@
 package create_order
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,7 +28,7 @@ type booking struct {
 }
 
 type bookingService interface {
-	CreateOrder(order domain.Order) (*domain.Order, error)
+	CreateOrder(ctx context.Context, order domain.Order) (*domain.Order, error)
 }
 
 type Handler struct {
@@ -41,6 +42,8 @@ func NewHandler(bookingService bookingService) *Handler {
 }
 
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req request
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -85,7 +88,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		order.Bookings = append(order.Bookings, newBooking)
 	}
 
-	createdOrder, err := h.booking.CreateOrder(order)
+	createdOrder, err := h.booking.CreateOrder(ctx, order)
 	if err != nil {
 		if errors.Is(err, domain.ErrOrderAlreadyExists) {
 			http_helpers.SendSuccess(w, http.StatusOK, createdOrder)

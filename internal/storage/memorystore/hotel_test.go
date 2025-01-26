@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -136,7 +137,7 @@ func TestHotelStore_Reserve(t *testing.T) {
 				}
 
 			},
-			expectedError: fmt.Errorf("room single not available in hotel id=1 for all requested dates"),
+			expectedError: fmt.Errorf("room 'single' not available in hotel id=1 for all requested dates"),
 			setupHotelStore: func(s *HotelStore) {
 				hotel := &domain.Hotel{
 					ID:   1,
@@ -210,7 +211,7 @@ func TestHotelStore_Reserve(t *testing.T) {
 					{HotelID: 1, RoomType: roomType, From: testDate, To: testDate.AddDate(0, 0, 2), RoomCount: 3},
 				}
 			},
-			expectedError: fmt.Errorf("room single not available in hotel id=1 for all requested dates"),
+			expectedError: fmt.Errorf("room 'single' not available in hotel id=1 for all requested dates"),
 			setupHotelStore: func(s *HotelStore) {
 				hotel := &domain.Hotel{
 					ID:   1,
@@ -253,7 +254,7 @@ func TestHotelStore_Reserve(t *testing.T) {
 
 			bookings := tt.setupBookings(tt.roomType)
 
-			err := store.Reserve(bookings)
+			err := store.Reserve(context.Background(), bookings)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
@@ -263,10 +264,10 @@ func TestHotelStore_Reserve(t *testing.T) {
 			}
 
 			for _, expectedAvailability := range tt.expectedAvailability {
-				for date, avail := range expectedAvailability.rooms {
+				for day, avail := range expectedAvailability.rooms {
 					hotelWrapper := store.roomAvailability[expectedAvailability.hotelID]
 					category := hotelWrapper.RoomCategories[expectedAvailability.roomType]
-					assert.Equal(t, avail, category.availability[date])
+					assert.Equal(t, avail, category.availability[day])
 				}
 			}
 		})
